@@ -29,7 +29,6 @@ PopupWebFrameBehaviour_2BB44AB0_A611_36DA_41BB_E0A92C343F93.url = https://docs.g
 PopupWebFrameBehaviour_D991BB11_A611_17DA_41E2_700B5A36DA14.url = https://docs.google.com/spreadsheets/d/e/2PACX-1vQUTGj2-R3xsk5-BVG6IRKODoTGvy9--FSclEU9QCisnFY9cFKH5Pig_7M5ex9hLfoEnFApXGnbBh8r/pubhtml?gid=1264609791&single=true
 PopupWebFrameBehaviour_D41BCCD3_A611_325E_41E1_E5DB42BFFF6C.url = https://docs.google.com/spreadsheets/d/e/2PACX-1vQUTGj2-R3xsk5-BVG6IRKODoTGvy9--FSclEU9QCisnFY9cFKH5Pig_7M5ex9hLfoEnFApXGnbBh8r/pubhtml?gid=1277469250&single=true
 PopupWebFrameBehaviour_D942C84A_A611_724E_41B9_A460763618EE.url = https://docs.google.com/spreadsheets/d/e/2PACX-1vQUTGj2-R3xsk5-BVG6IRKODoTGvy9--FSclEU9QCisnFY9cFKH5Pig_7M5ex9hLfoEnFApXGnbBh8r/pubhtml?gid=1291463071&single=true
-PopupWebFrameBehaviour_90032274_A673_7659_41C8_AA5B91F50C6D.url = https://docs.google.com/spreadsheets/d/e/2PACX-1vQUTGj2-R3xsk5-BVG6IRKODoTGvy9--FSclEU9QCisnFY9cFKH5Pig_7M5ex9hLfoEnFApXGnbBh8r/pubhtml?gid=1308012539&single=true
 PopupWebFrameBehaviour_CB353F9B_97A3_5504_41DA_C9FE5927DCE6.url = https://docs.google.com/spreadsheets/d/e/2PACX-1vQUTGj2-R3xsk5-BVG6IRKODoTGvy9--FSclEU9QCisnFY9cFKH5Pig_7M5ex9hLfoEnFApXGnbBh8r/pubhtml?gid=1308012539&single=true
 PopupWebFrameBehaviour_F7EFAA56_99FA_4C27_41CE_65C9141042F2.url = https://docs.google.com/spreadsheets/d/e/2PACX-1vQUTGj2-R3xsk5-BVG6IRKODoTGvy9--FSclEU9QCisnFY9cFKH5Pig_7M5ex9hLfoEnFApXGnbBh8r/pubhtml?gid=1317808782&single=true
 PopupWebFrameBehaviour_25AF9835_A633_31DB_41DD_33FA6DCDE6EF.url = https://docs.google.com/spreadsheets/d/e/2PACX-1vQUTGj2-R3xsk5-BVG6IRKODoTGvy9--FSclEU9QCisnFY9cFKH5Pig_7M5ex9hLfoEnFApXGnbBh8r/pubhtml?gid=1325212675&single=true
@@ -584,9 +583,9 @@ HotspotPanoramaOverlayTextImage_3ED15AF0_94EE_06E8_41DB_973CE35D3730.text = Terr
 ### Floorplan
 
 ### Imágen
-imlevel_2C9963E3_A633_767E_41D3_8CF0741D43BD.url = media/map_3D88E67F_2E72_B798_41B1_004801CAB30A_es_0.webp
-imlevel_2C9953E4_A633_767A_41D2_18F300B86870.url = media/map_3D88E67F_2E72_B798_41B1_004801CAB30A_es_1.webp
-imlevel_2C99B3E4_A633_767A_41D4_B06B9A9297A6.url = media/map_3D88E67F_2E72_B798_41B1_004801CAB30A_es_2.webp
+imlevel_373A48FF_A631_3247_41E4_131E5B91721D.url = media/map_3D88E67F_2E72_B798_41B1_004801CAB30A_es_0.webp
+imlevel_373A78FF_A631_3247_41E0_8776BAE9E2FB.url = media/map_3D88E67F_2E72_B798_41B1_004801CAB30A_es_1.webp
+imlevel_373A6900_A631_33B9_41B1_9BE70B2C1246.url = media/map_3D88E67F_2E72_B798_41B1_004801CAB30A_es_2.webp
 imlevel_0BAFDFCD_94EA_3F39_41D7_C6DABC4F6228.url = media/panorama_0D987A72_1EB1_E27A_41A0_3EE885BF6467_HS_0ah4mbi2_es.webp
 imlevel_0A5059A7_94EA_0368_41D2_54F64B17BEC0.url = media/panorama_0D987A72_1EB1_E27A_41A0_3EE885BF6467_HS_0ifrupnh_es.webp
 imlevel_F859F41B_957E_0158_41A4_9CA8105B7A07.url = media/panorama_0D987A72_1EB1_E27A_41A0_3EE885BF6467_HS_0lvdimaj_es.webp
