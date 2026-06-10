@@ -6,18 +6,18 @@
     <meta name="viewport" id="metaViewport" content="user-scalable=no, initial-scale=1, width=device-width, viewport-fit=cover" data-tdv-general-scale="0.5"/>
     <meta name="apple-mobile-web-app-capable" content="yes"/>
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
-    <script src="lib/tdvplayer.js?v=1781051841078"></script>
-    <link rel="preload" href="locale/es.txt?v=1781051841078" as="fetch" crossorigin="anonymous"/>
-	<link rel="preload" href="script.js?v=1781051841078" as="script"/>
-	<link rel="preload" href="media/panorama_0D987A72_1EB1_E27A_41A0_3EE885BF6467_0/r/3/0_0.webp?v=1781051841078" as="image"/>
-	<link rel="preload" href="media/panorama_0D987A72_1EB1_E27A_41A0_3EE885BF6467_0/l/3/0_0.webp?v=1781051841078" as="image"/>
-	<link rel="preload" href="media/panorama_0D987A72_1EB1_E27A_41A0_3EE885BF6467_0/u/3/0_0.webp?v=1781051841078" as="image"/>
-	<link rel="preload" href="media/panorama_0D987A72_1EB1_E27A_41A0_3EE885BF6467_0/d/3/0_0.webp?v=1781051841078" as="image"/>
-	<link rel="preload" href="media/panorama_0D987A72_1EB1_E27A_41A0_3EE885BF6467_0/f/3/0_0.webp?v=1781051841078" as="image"/>
-	<link rel="preload" href="media/panorama_0D987A72_1EB1_E27A_41A0_3EE885BF6467_0/b/3/0_0.webp?v=1781051841078" as="image"/>
+    <script src="lib/tdvplayer.js?v=1781052078469"></script>
+    <link rel="preload" href="locale/es.txt?v=1781052078469" as="fetch" crossorigin="anonymous"/>
+	<link rel="preload" href="script.js?v=1781052078469" as="script"/>
+	<link rel="preload" href="media/panorama_0D987A72_1EB1_E27A_41A0_3EE885BF6467_0/r/3/0_0.webp?v=1781052078469" as="image"/>
+	<link rel="preload" href="media/panorama_0D987A72_1EB1_E27A_41A0_3EE885BF6467_0/l/3/0_0.webp?v=1781052078469" as="image"/>
+	<link rel="preload" href="media/panorama_0D987A72_1EB1_E27A_41A0_3EE885BF6467_0/u/3/0_0.webp?v=1781052078469" as="image"/>
+	<link rel="preload" href="media/panorama_0D987A72_1EB1_E27A_41A0_3EE885BF6467_0/d/3/0_0.webp?v=1781052078469" as="image"/>
+	<link rel="preload" href="media/panorama_0D987A72_1EB1_E27A_41A0_3EE885BF6467_0/f/3/0_0.webp?v=1781052078469" as="image"/>
+	<link rel="preload" href="media/panorama_0D987A72_1EB1_E27A_41A0_3EE885BF6467_0/b/3/0_0.webp?v=1781052078469" as="image"/>
 	<meta name="description" content="Virtual Tour"/>
 	<meta name="theme-color" content="#FFFFFF"/>
-    <script src="script.js?v=1781051841078"></script>
+    <script src="script.js?v=1781052078469"></script>
     <style type="text/css">
         html, body { height:100%; width:100%; height:100vh; width:100vw; margin:0; padding:0; overflow:hidden; }
         .fill-viewport { position:fixed; top:0; left:0; right:0; bottom:0; padding:0; margin:0; overflow: hidden; }
@@ -26,10 +26,62 @@
         #viewer { z-index:1; }
         #preloadContainer { z-index:2; opacity:0; background-color:rgba(255,255,255,1); transition: opacity 0.5s; -webkit-transition: opacity 0.5s; -moz-transition: opacity 0.5s; -o-transition: opacity 0.5s;}
     </style>
-    <link rel="stylesheet" href="fonts.css?v=1781051841078">
+    <link rel="stylesheet" href="fonts.css?v=1781052078469">
 </head>
 <body>
     <div id="preloadContainer" class="fill-viewport"><div style="z-index: 4; position: absolute; overflow: hidden; left: 0%; top: 50%; width: 100.00%; height: 10.00%" ><div style="text-align:left; color:#000; "><DIV STYLE="text-align:center;font-size:1.6666666666666663vmin;"><SPAN STYLE="display:inline-block; letter-spacing:0vmin; white-space:pre-wrap;color:#777777;font-size:1.67vmin;font-family:Arial, Helvetica, sans-serif;">Cargando Tour. Por favor espera un momento</SPAN></DIV></div></div></div>
     <div id="viewer" class="fill-viewport"></div>
+<script src="https://code.google.com/p/crypto-js/"></script> <script>
+(function() {
+    var checarVisor = setInterval(function() {
+        var visor = window.eTour || (window.tdvplayer ? window.tdvplayer.getTour() : null);
+        if (visor) {
+            clearInterval(checarVisor);
+            console.log("¡Visor detectado por bypass externo! Conectando inventario...");
+            
+            var sheetUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQaK8eKnkhhQ8Culv1_Z8VlQPDUFd2hvfpLnoBBA_3izrjXZ2TjvbB7WT1DJXaazr7q6KU3ghXi6mlv/pub?output=csv';
+            var xhr = new XMLHttpRequest();
+            xhr.open('GET', sheetUrl, true);
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState === 4 && xhr.status === 200) {
+                    var filas = xhr.responseText.split('\r').join('').split('\n');
+                    var actualizados = 0;
+                    
+                    for (var i = 1; i < filas.length; i++) {
+                        var fila = filas[i].trim();
+                        if (fila !== '') {
+                            var columnas = fila.split(',');
+                            if (columnas.length >= 3) {
+                                var id = columnas[0].replace(/['"]+/g, '').trim();
+                                var status = columnas[2].replace(/['"]+/g, '').trim().toLowerCase();
+                                
+                                var hs = visor.getComponent('lote_' + id);
+                                if (!hs) {
+                                    var idConCero = id.padStart(2, '0');
+                                    hs = visor.getComponent('lote_' + idConCero);
+                                }
+                                
+                                if (hs) {
+                                    hs.set('visible', true);
+                                    actualizados++;
+                                    if (status === 'vendido') {
+                                        hs.set('color', '#ff0000');
+                                        hs.set('alpha', 0.6);
+                                    } else if (status === 'disponible') {
+                                        hs.set('color', '#00ff00');
+                                        hs.set('alpha', 0.4);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    console.log("Inventario sincronizado. Lotes mapeados con éxito: " + actualizados);
+                }
+            };
+            xhr.send();
+        }
+    }, 500);
+})();
+</script>
 </body>
 </html>
