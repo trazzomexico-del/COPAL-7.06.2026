@@ -32,68 +32,83 @@
     <div id="preloadContainer" class="fill-viewport"><div style="z-index: 4; position: absolute; overflow: hidden; left: 0%; top: 50%; width: 100.00%; height: 10.00%" ><div style="text-align:left; color:#000; "><DIV STYLE="text-align:center;font-size:1.6666666666666663vmin;"><SPAN STYLE="display:inline-block; letter-spacing:0vmin; white-space:pre-wrap;color:#777777;font-size:1.67vmin;font-family:Arial, Helvetica, sans-serif;">Cargando Tour. Por favor espera un momento</SPAN></DIV></div></div></div>
     <div id="viewer" class="fill-viewport"></div>
 <script>
-// --- CONFIGURACIÓN DE CREDENCIALES INTEGRADAS ---
+// --- CONFIGURACIÓN DE CREDENCIALES ---
 const AIRTABLE_BASE_ID = 'pat0s6qOv6jzw2Tsg'; 
 const AIRTABLE_API_TOKEN = 'pat0s6qOv6jzw2Tsg.478eb4b67b0c016fb049064eda844089bb7d6d9b020b119e0de181eafa63b1f0'; 
 const AIRTABLE_TABLE_NAME = 'Propiedades';
 
-// --- CONFIGURACIÓN DE COLORES PARA LOS LOTES ---
-// Puedes ajustar los colores (HEX) y la opacidad (de 0 a 1) según tu diseño
 const configuracionEstatus = {
-    "Disponible": { color: "#2ecc71", opacidad: 0.4 }, // Verde translúcido
-    "Apartado":   { color: "#f1c40f", opacidad: 0.5 }, // Amarillo translúcido
-    "Vendido":    { color: "#e74c3c", opacidad: 0.6 }  // Rojo translúcido
+    "Disponible": { color: "#2ecc71", opacidad: 0.4 }, // Verde
+    "Apartado":   { color: "#f1c40f", opacidad: 0.5 }, // Amarillo
+    "Vendido":    { color: "#e74c3c", opacidad: 0.6 }  // Rojo
 };
 
 async function consultarAirtableYActualizar() {
-    // 1. Detectamos el reproductor de 3DVista (vtour o tdvplayer)
-    const player = window.vtour || (window.tdvplayer ? window.tdvplayer.getPlayer() : null);
+    // 1. Buscamos el reproductor en todas las variables posibles que usa 3DVista
+    let player = null;
     
-    // Si el mapa interactivo en pantalla aún no termina de cargar, esperamos la siguiente vuelta
-    if (!player || typeof player.setHotspotColor !== 'function') {
-        console.log("Esperando a que el mapa interactivo de 3DVista esté listo...");
+    if (typeof window.vtour !== 'undefined') {
+        player = window.vtour;
+    } else if (typeof window.tdvplayer !== 'undefined' && typeof window.tdvplayer.getPlayer === 'function') {
+        player = window.tdvplayer.getPlayer();
+    } else if (window.panoramas && window.panoramas.getPlayer) {
+        player = window.panoramas.getPlayer();
+    }
+
+    // Si aún no encontramos la función para pintar los hotspots, seguimos esperando
+    if (!player || (typeof player.setHotspotColor !== 'function' && typeof player.setProp !== 'function')) {
+        console.log("Buscando el motor de 3DVista en el mapa...");
         return; 
     }
+
+    // Si llegamos aquí, ¡ya encontramos el reproductor! Frenamos el bucle de espera
+    clearInterval(revisorCargaTour);
+    console.log("¡Conexión establecida con 3DVista! Conectando a Airtable...");
 
     const urlOficial = `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${AIRTABLE_TABLE_NAME}`;
 
     try {
-        // 2. Realizamos la consulta segura a tu base de Airtable
         const respuesta = await fetch(urlOficial, {
             headers: { 'Authorization': `Bearer ${AIRTABLE_API_TOKEN}` }
         });
         
-        if (!respuesta.ok) throw new Error("Error al conectar con la API de Airtable. Revisa el nombre de la tabla.");
+        if (!respuesta.ok) throw new Error("Error en la respuesta de Airtable. Verifica el nombre de la tabla.");
         
         const datos = await respuesta.json();
-        console.log("Datos recibidos de Airtable con éxito:", datos.records);
+        console.log("Datos exitosos de Airtable:", datos.records);
         
-        // 3. Recorremos los registros para pintar los polígonos
         datos.records.forEach(registro => {
             const campos = registro.fields;
-            const idHotspot = campos.ID_Hotspot; // Columna con el nombre del lote en 3DVista
-            const estatusPropiedad = campos.Estatus; // Columna con el estatus (Disponible, Vendido, etc.)
+            const idHotspot = campos.ID_Hotspot; 
+            const estatusPropiedad = campos.Estatus; 
             
-            // Si el lote coincide con la configuración de color, lo pintamos
             if (idHotspot && estatusPropiedad && configuracionEstatus[estatusPropiedad]) {
                 const infoVisual = configuracionEstatus[estatusPropiedad];
                 
-                // Aplicamos el color de relleno y del borde al polígono en tiempo real
-                player.setHotspotColor(idHotspot, infoVisual.color, infoVisual.opacidad);
-                player.setHotspotBorderColor(idHotspot, infoVisual.color, 0.8);
+                // Intentar pintar usando los dos métodos estándar de la API de 3DVista
+                try {
+                    if (typeof player.setHotspotColor === 'function') {
+                        player.setHotspotColor(idHotspot, infoVisual.color, infoVisual.opacidad);
+                        player.setHotspotBorderColor(idHotspot, infoVisual.color, 0.8);
+                    } else if (typeof player.setProp === 'function') {
+                        // Alternativa nativa para ciertos tipos de skins/hotspots
+                        player.setProp(idHotspot, "backgroundColor", infoVisual.color);
+                        player.setProp(idHotspot, "backgroundAlpha", infoVisual.opacidad);
+                    }
+                } catch (errHotspot) {
+                    console.log(`No se pudo pintar el hotspot: ${idHotspot}. Revisa que el nombre coincida.`);
+                }
             }
         });
 
-        // Una vez que se pintan con éxito, detenemos el bucle para no saturar la red
-        clearInterval(revisorCargaTour);
-        console.log("¡Polígonos de Copal actualizados correctamente desde Airtable!");
+        console.log("¡Sincronización completa!");
 
     } catch (error) {
-        console.error("Error en la sincronización con Airtable:", error);
+        console.error("Error al mapear Airtable:", error);
     }
 }
 
-// Revisar de forma segura cada 1.5 segundos si el mapa ya cargó para inyectar los datos
+// Revisar cada 1.5 segundos hasta romper el ciclo al conectar
 const revisorCargaTour = setInterval(consultarAirtableYActualizar, 1500);
 </script>
 </body>
