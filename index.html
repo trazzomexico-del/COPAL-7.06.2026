@@ -32,14 +32,15 @@
     <div id="preloadContainer" class="fill-viewport"><div style="z-index: 4; position: absolute; overflow: hidden; left: 0%; top: 50%; width: 100.00%; height: 10.00%" ><div style="text-align:left; color:#000; "><DIV STYLE="text-align:center;font-size:1.6666666666666663vmin;"><SPAN STYLE="display:inline-block; letter-spacing:0vmin; white-space:pre-wrap;color:#777777;font-size:1.67vmin;font-family:Arial, Helvetica, sans-serif;">Cargando Tour. Por favor espera un momento</SPAN></DIV></div></div></div>
     <div id="viewer" class="fill-viewport"></div>
 <script>
-// Forzamos a que el código se ejecute de forma segura 3 segundos después de que el tour cargue en internet
 setTimeout(function() {
     var sheetUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQaK8eKnkhhQ8Culv1_Z8VlQPDUFd2hvfpLnoBBA_3izrjXZ2TjvbB7WT1DJXaazr7q6KU3ghXi6mlv/pub?output=csv';
     var xhr = new XMLHttpRequest();
     xhr.open('GET', sheetUrl, true);
     xhr.onreadystatechange = function () {
         if (xhr.readyState === 4 && xhr.status === 200) {
+            console.log("¡Éxito! Conectado a Google Sheets.");
             var filas = xhr.responseText.split('\r').join('').split('\n');
+            
             for (var i = 1; i < filas.length; i++) {
                 var fila = filas[i].trim();
                 if (fila !== '') {
@@ -48,10 +49,14 @@ setTimeout(function() {
                         var id = columnas[0].replace(/['"]+/g, '').trim();
                         var status = columnas[2].replace(/['"]+/g, '').trim().toLowerCase();
                         
-                        // Accedemos de forma externa y global al reproductor de 3DVista
+                        // Generamos el nombre buscado
+                        var nombreBuscado = 'lote_' + id;
+                        
                         if (window.eTour) {
-                            var hs = window.eTour.getComponent('lote_' + id);
+                            var hs = window.eTour.getComponent(nombreBuscado);
                             if (hs) {
+                                // Si lo encuentra, lo pinta
+                                hs.set('visible', true);
                                 if (status === 'vendido') {
                                     hs.set('color', 16711680); // Rojo
                                     hs.set('alpha', 0.6);
@@ -59,6 +64,9 @@ setTimeout(function() {
                                     hs.set('color', 65280);    // Verde
                                     hs.set('alpha', 0.4);
                                 }
+                            } else {
+                                // ¡AQUÍ ESTÁ EL TRUCO! Si no se pintan, la consola nos dirá por qué.
+                                console.warn("Google Sheets tiene el id '" + id + "', pero en 3DVista no existe ningún polígono llamado: " + nombreBuscado);
                             }
                         }
                     }
@@ -67,7 +75,7 @@ setTimeout(function() {
         }
     };
     xhr.send();
-}, 3000); // 3000 milisegundos de espera para dar tiempo a que el plano cargue en pantalla
+}, 4000); // Subimos a 4 segundos por seguridad para asegurar la carga completa de Velasur
 </script>
 </body>
 </html>
