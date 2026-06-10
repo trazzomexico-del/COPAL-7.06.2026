@@ -32,70 +32,69 @@
     <div id="preloadContainer" class="fill-viewport"><div style="z-index: 4; position: absolute; overflow: hidden; left: 0%; top: 50%; width: 100.00%; height: 10.00%" ><div style="text-align:left; color:#000; "><DIV STYLE="text-align:center;font-size:1.6666666666666663vmin;"><SPAN STYLE="display:inline-block; letter-spacing:0vmin; white-space:pre-wrap;color:#777777;font-size:1.67vmin;font-family:Arial, Helvetica, sans-serif;">Cargando Tour. Por favor espera un momento</SPAN></DIV></div></div></div>
     <div id="viewer" class="fill-viewport"></div>
 <script>
-// --- CONFIGURACIÓN DE CREDENCIALES ---
+// --- CONFIGURACIÓN DE CREDENCIALES INTEGRADAS ---
 const AIRTABLE_BASE_ID = 'pat0s6qOv6jzw2Tsg'; 
 const AIRTABLE_API_TOKEN = 'pat0s6qOv6jzw2Tsg.478eb4b67b0c016fb049064eda844089bb7d6d9b020b119e0de181eafa63b1f0'; 
 const AIRTABLE_TABLE_NAME = 'Propiedades';
 
-// --- CONFIGURACIÓN DE COLORES (Formato Hexadecimal) ---
-// El primer valor es el color, el segundo número (0.4) es la opacidad/transparencia (de 0 a 1)
+// --- CONFIGURACIÓN DE COLORES PARA LOS LOTES ---
+// Puedes ajustar los colores (HEX) y la opacidad (de 0 a 1) según tu diseño
 const configuracionEstatus = {
-    "Disponible": { color: "#2ecc71", opacidad: 0.4 }, // Verde
-    "Apartado":   { color: "#f1c40f", opacidad: 0.5 }, // Amarillo
-    "Vendido":    { color: "#e74c3c", opacidad: 0.6 }  // Rojo
+    "Disponible": { color: "#2ecc71", opacidad: 0.4 }, // Verde translúcido
+    "Apartado":   { color: "#f1c40f", opacidad: 0.5 }, // Amarillo translúcido
+    "Vendido":    { color: "#e74c3c", opacidad: 0.6 }  // Rojo translúcido
 };
 
-// --- FUNCIÓN QUE CONECTA CON AIRTABLE ---
 async function consultarAirtableYActualizar() {
-    const url = `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${AIRTABLE_TABLE_NAME}`;
+    // 1. Detectamos el reproductor de 3DVista (vtour o tdvplayer)
+    const player = window.vtour || (window.tdvplayer ? window.tdvplayer.getPlayer() : null);
     
+    // Si el mapa interactivo en pantalla aún no termina de cargar, esperamos la siguiente vuelta
+    if (!player || typeof player.setHotspotColor !== 'function') {
+        console.log("Esperando a que el mapa interactivo de 3DVista esté listo...");
+        return; 
+    }
+
+    const urlOficial = `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${AIRTABLE_TABLE_NAME}`;
+
     try {
-        const respuesta = await fetch(url, {
-            headers: {
-                'Authorization': `Bearer ${AIRTABLE_API_TOKEN}`
-            }
+        // 2. Realizamos la consulta segura a tu base de Airtable
+        const respuesta = await fetch(urlOficial, {
+            headers: { 'Authorization': `Bearer ${AIRTABLE_API_TOKEN}` }
         });
         
-        if (!respuesta.ok) throw new Error("Error en la petición a Airtable");
+        if (!respuesta.ok) throw new Error("Error al conectar con la API de Airtable. Revisa el nombre de la tabla.");
         
         const datos = await respuesta.json();
+        console.log("Datos recibidos de Airtable con éxito:", datos.records);
         
-        // Procesamos cada registro de la base de datos
+        // 3. Recorremos los registros para pintar los polígonos
         datos.records.forEach(registro => {
             const campos = registro.fields;
-            const idHotspot = campos.ID_Hotspot;
-            const estatusPropiedad = campos.Estatus;
+            const idHotspot = campos.ID_Hotspot; // Columna con el nombre del lote en 3DVista
+            const estatusPropiedad = campos.Estatus; // Columna con el estatus (Disponible, Vendido, etc.)
             
-            // Si el lote tiene un estatus válido asignado, aplicamos los cambios
+            // Si el lote coincide con la configuración de color, lo pintamos
             if (idHotspot && estatusPropiedad && configuracionEstatus[estatusPropiedad]) {
                 const infoVisual = configuracionEstatus[estatusPropiedad];
                 
-                // Llamamos a la API interna de 3DVista para modificar el polígono
-                // Nota: Asegúrate de que el objeto global del tour esté accesible (comúnmente 'vtour')
-                if (typeof vtour !== 'undefined') {
-                    // Cambiamos el color de fondo y su opacidad en tiempo real
-                    vtour.setHotspotColor(idHotspot, infoVisual.color, infoVisual.opacidad);
-                    
-                    // Opcional: Cambiar también el color del borde del polígono si lo deseas
-                    vtour.setHotspotBorderColor(idHotspot, infoVisual.color, 0.8);
-                }
+                // Aplicamos el color de relleno y del borde al polígono en tiempo real
+                player.setHotspotColor(idHotspot, infoVisual.color, infoVisual.opacidad);
+                player.setHotspotBorderColor(idHotspot, infoVisual.color, 0.8);
             }
         });
-        
+
+        // Una vez que se pintan con éxito, detenemos el bucle para no saturar la red
+        clearInterval(revisorCargaTour);
+        console.log("¡Polígonos de Copal actualizados correctamente desde Airtable!");
+
     } catch (error) {
-        console.error("Hubo un problema al actualizar los hotspots:", error);
+        console.error("Error en la sincronización con Airtable:", error);
     }
 }
 
-// --- ACTIVACIÓN AUTOMÁTICA AL CARGAR EL TOUR ---
-// 3DVista expone un evento nativo cuando el tour interactivo está listo en el navegador
-window.on3DVistaLoad = function() {
-    // Ejecutamos la consulta inmediatamente al cargar
-    consultarAirtableYActualizar();
-    
-    // Opcional: Si quieres que el tour se actualice solo cada 60 segundos sin recargar la página:
-    // setInterval(consultarAirtableYActualizar, 60000);
-};
+// Revisar de forma segura cada 1.5 segundos si el mapa ya cargó para inyectar los datos
+const revisorCargaTour = setInterval(consultarAirtableYActualizar, 1500);
 </script>
 </body>
 </html>
