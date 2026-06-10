@@ -32,7 +32,8 @@
     <div id="preloadContainer" class="fill-viewport"><div style="z-index: 4; position: absolute; overflow: hidden; left: 0%; top: 50%; width: 100.00%; height: 10.00%" ><div style="text-align:left; color:#000; "><DIV STYLE="text-align:center;font-size:1.6666666666666663vmin;"><SPAN STYLE="display:inline-block; letter-spacing:0vmin; white-space:pre-wrap;color:#777777;font-size:1.67vmin;font-family:Arial, Helvetica, sans-serif;">Cargando Tour. Por favor espera un momento</SPAN></DIV></div></div></div>
     <div id="viewer" class="fill-viewport"></div>
 <script>
-setTimeout(function() {
+// Creamos la función que se encargará de pintar los lotes
+function actualizarDisponibilidad() {
     var sheetUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQaK8eKnkhhQ8Culv1_Z8VlQPDUFd2hvfpLnoBBA_3izrjXZ2TjvbB7WT1DJXaazr7q6KU3ghXi6mlv/pub?output=csv';
     var xhr = new XMLHttpRequest();
     xhr.open('GET', sheetUrl, true);
@@ -41,6 +42,14 @@ setTimeout(function() {
             console.log("¡Éxito! Conectado a Google Sheets.");
             var filas = xhr.responseText.split('\r').join('').split('\n');
             
+            // Validamos que el reproductor de 3DVista esté listo en el navegador
+            var visor = window.eTour || (window.tdvplayer ? window.tdvplayer.getTour() : null);
+            
+            if (!visor) {
+                console.warn("El visor de 3DVista aún no está listo. Reintentando...");
+                return;
+            }
+
             for (var i = 1; i < filas.length; i++) {
                 var fila = filas[i].trim();
                 if (fila !== '') {
@@ -48,20 +57,32 @@ setTimeout(function() {
                     if (columnas.length >= 3) {
                         var id = columnas[0].replace(/['"]+/g, '').trim();
                         var status = columnas[2].replace(/['"]+/g, '').trim().toLowerCase();
-                        var nombreBuscado = 'lote_' + id;
                         
-                        if (window.eTour) {
-                            var hs = window.eTour.getComponent(nombreBuscado);
-                            if (hs) {
-                                hs.set('visible', true);
-                                
-                                // Cambiamos al formato de asignación universal por texto #RRGGBB
+                        // Buscamos el lote. Opciones de nombramiento comunes: 'lote_1' o 'lote_01'
+                        var nombreHotspot = 'lote_' + id;
+                        var hs = visor.getComponent(nombreHotspot);
+                        
+                        if (hs) {
+                            hs.set('visible', true);
+                            if (status === 'vendido') {
+                                hs.set('color', '#ff0000'); // Rojo
+                                hs.set('alpha', 0.6);
+                            } else if (status === 'disponible') {
+                                hs.set('color', '#00ff00'); // Verde
+                                hs.set('alpha', 0.4);
+                            }
+                        } else {
+                            // Si tus lotes se llaman "lote_01" en vez de "lote_1", este plan B lo corrige en automático:
+                            var idConCero = id.padStart(2, '0');
+                            var hsCero = visor.getComponent('lote_' + idConCero);
+                            if (hsCero) {
+                                hsCero.set('visible', true);
                                 if (status === 'vendido') {
-                                    hs.set('color', '#ff0000'); // Rojo Web
-                                    hs.set('alpha', 0.6);
+                                    hsCero.set('color', '#ff0000');
+                                    hsCero.set('alpha', 0.6);
                                 } else if (status === 'disponible') {
-                                    hs.set('color', '#00ff00'); // Verde Web
-                                    hs.set('alpha', 0.4);
+                                    hsCero.set('color', '#00ff00');
+                                    hsCero.set('alpha', 0.4);
                                 }
                             }
                         }
@@ -71,7 +92,17 @@ setTimeout(function() {
         }
     };
     xhr.send();
-}, 4000);
+}
+
+// LE DECIMOS A 3DVISTA QUE CORRA EL CÓDIGO EN CUANTO EL TOUR INICIE OFICIALMENTE
+if (window.tdvplayer) {
+    window.tdvplayer.on('onTourStart', function() {
+        actualizarDisponibilidad();
+    });
+} else {
+    // Si por temas de carga lenta el reproductor no ha iniciado, usamos un respaldo de seguridad
+    setTimeout(actualizarDisponibilidad, 5000);
+}
 </script>
 </body>
 </html>
