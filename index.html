@@ -6,18 +6,18 @@
     <meta name="viewport" id="metaViewport" content="user-scalable=no, initial-scale=1, width=device-width, viewport-fit=cover" data-tdv-general-scale="0.5"/>
     <meta name="apple-mobile-web-app-capable" content="yes"/>
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
-    <script src="lib/tdvplayer.js?v=1781053356593"></script>
-    <link rel="preload" href="locale/es.txt?v=1781053356593" as="fetch" crossorigin="anonymous"/>
-	<link rel="preload" href="script.js?v=1781053356593" as="script"/>
-	<link rel="preload" href="media/panorama_0D987A72_1EB1_E27A_41A0_3EE885BF6467_0/r/3/0_0.webp?v=1781053356593" as="image"/>
-	<link rel="preload" href="media/panorama_0D987A72_1EB1_E27A_41A0_3EE885BF6467_0/l/3/0_0.webp?v=1781053356593" as="image"/>
-	<link rel="preload" href="media/panorama_0D987A72_1EB1_E27A_41A0_3EE885BF6467_0/u/3/0_0.webp?v=1781053356593" as="image"/>
-	<link rel="preload" href="media/panorama_0D987A72_1EB1_E27A_41A0_3EE885BF6467_0/d/3/0_0.webp?v=1781053356593" as="image"/>
-	<link rel="preload" href="media/panorama_0D987A72_1EB1_E27A_41A0_3EE885BF6467_0/f/3/0_0.webp?v=1781053356593" as="image"/>
-	<link rel="preload" href="media/panorama_0D987A72_1EB1_E27A_41A0_3EE885BF6467_0/b/3/0_0.webp?v=1781053356593" as="image"/>
+    <script src="lib/tdvplayer.js?v=1781058772449"></script>
+    <link rel="preload" href="locale/es.txt?v=1781058772449" as="fetch" crossorigin="anonymous"/>
+	<link rel="preload" href="script.js?v=1781058772449" as="script"/>
+	<link rel="preload" href="media/panorama_0D987A72_1EB1_E27A_41A0_3EE885BF6467_0/r/3/0_0.webp?v=1781058772449" as="image"/>
+	<link rel="preload" href="media/panorama_0D987A72_1EB1_E27A_41A0_3EE885BF6467_0/l/3/0_0.webp?v=1781058772449" as="image"/>
+	<link rel="preload" href="media/panorama_0D987A72_1EB1_E27A_41A0_3EE885BF6467_0/u/3/0_0.webp?v=1781058772449" as="image"/>
+	<link rel="preload" href="media/panorama_0D987A72_1EB1_E27A_41A0_3EE885BF6467_0/d/3/0_0.webp?v=1781058772449" as="image"/>
+	<link rel="preload" href="media/panorama_0D987A72_1EB1_E27A_41A0_3EE885BF6467_0/f/3/0_0.webp?v=1781058772449" as="image"/>
+	<link rel="preload" href="media/panorama_0D987A72_1EB1_E27A_41A0_3EE885BF6467_0/b/3/0_0.webp?v=1781058772449" as="image"/>
 	<meta name="description" content="Virtual Tour"/>
 	<meta name="theme-color" content="#FFFFFF"/>
-    <script src="script.js?v=1781053356593"></script>
+    <script src="script.js?v=1781058772449"></script>
     <style type="text/css">
         html, body { height:100%; width:100%; height:100vh; width:100vw; margin:0; padding:0; overflow:hidden; }
         .fill-viewport { position:fixed; top:0; left:0; right:0; bottom:0; padding:0; margin:0; overflow: hidden; }
@@ -26,19 +26,65 @@
         #viewer { z-index:1; }
         #preloadContainer { z-index:2; opacity:0; background-color:rgba(255,255,255,1); transition: opacity 0.5s; -webkit-transition: opacity 0.5s; -moz-transition: opacity 0.5s; -o-transition: opacity 0.5s;}
     </style>
-    <link rel="stylesheet" href="fonts.css?v=1781053356593">
+    <link rel="stylesheet" href="fonts.css?v=1781058772449">
 </head>
 <body>
     <div id="preloadContainer" class="fill-viewport"><div style="z-index: 4; position: absolute; overflow: hidden; left: 0%; top: 50%; width: 100.00%; height: 10.00%" ><div style="text-align:left; color:#000; "><DIV STYLE="text-align:center;font-size:1.6666666666666663vmin;"><SPAN STYLE="display:inline-block; letter-spacing:0vmin; white-space:pre-wrap;color:#777777;font-size:1.67vmin;font-family:Arial, Helvetica, sans-serif;">Cargando Tour. Por favor espera un momento</SPAN></DIV></div></div></div>
     <div id="viewer" class="fill-viewport"></div>
-<script>
+// 1. Configura tus credenciales de Airtable
+const AIRTABLE_BASE_ID = 'tu_base_id_aqui';
+const AIRTABLE_TABLE_NAME = 'Propiedades';
+const AIRTABLE_API_TOKEN = 'tu_personal_access_token_aqui'; // Usa Personal Access Tokens (PAT)
 
-window.addEventListener("load", function(){
+const url = `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${AIRTABLE_TABLE_NAME}`;
 
-   console.log("Tour cargado");
+// 2. Mapeo de colores según el estatus (Formatos HEX con opacidad si lo soporta tu API)
+const coloresEstatus = {
+    "Disponible": "#2ecc71", // Verde
+    "Apartado": "#f1c40f",   // Amarillo
+    "Vendido": "#e74c3c"     // Rojo
+};
 
-});
+// 3. Función para consultar Airtable y actualizar el tour
+async function actualizarTourDesdeAirtable() {
+    try {
+        const respuesta = await fetch(url, {
+            headers: {
+                Authorization: `Bearer ${AIRTABLE_API_TOKEN}`
+            }
+        });
+        const datos = await respuesta.json();
+        
+        // Recorremos cada registro devuelto por Airtable
+        datos.records.forEach(record => {
+            const idHotspot = record.fields.ID_Hotspot;
+            const estatus = record.fields.Estatus;
+            const precio = record.fields.Precio;
+            
+            // Buscamos el color correspondiente al estatus
+            const colorAsignado = coloresEstatus[estatus] || "#ffffff";
+            
+            // 4. Le ordenamos a 3DVista que cambie el color del polígono
+            // Nota: Si usas la API nativa o Blaze IT, la función exacta puede variar ligeramente.
+            // Ejemplo conceptual usando la lógica de Blaze IT:
+            const hotspotElemento = getHotspotByName(idHotspot);
+            if (hotspotElemento) {
+                setHotspotColor(hotspotElemento, colorAsignado);
+                
+                // Opcional: Si quieres que al hacer clic muestre los datos de Airtable
+                hotspotElemento.onClick = function() {
+                    mostrarPopupPersonalizado(idHotspot, estatus, precio);
+                };
+            }
+        });
+    } catch (error) {
+        console.error("Error al conectar con Airtable:", error);
+    }
+}
 
-</script>
+// 5. Ejecutar la función cuando el tour virtual esté completamente cargado
+window.on3DVistaLoad = function() {
+    actualizarTourDesdeAirtable();
+};
 </body>
 </html>
