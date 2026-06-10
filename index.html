@@ -48,25 +48,21 @@ setTimeout(function() {
                     if (columnas.length >= 3) {
                         var id = columnas[0].replace(/['"]+/g, '').trim();
                         var status = columnas[2].replace(/['"]+/g, '').trim().toLowerCase();
-                        
-                        // Generamos el nombre buscado
                         var nombreBuscado = 'lote_' + id;
                         
                         if (window.eTour) {
                             var hs = window.eTour.getComponent(nombreBuscado);
                             if (hs) {
-                                // Si lo encuentra, lo pinta
                                 hs.set('visible', true);
+                                
+                                // Cambiamos al formato de asignación universal por texto #RRGGBB
                                 if (status === 'vendido') {
-                                    hs.set('color', 16711680); // Rojo
+                                    hs.set('color', '#ff0000'); // Rojo Web
                                     hs.set('alpha', 0.6);
                                 } else if (status === 'disponible') {
-                                    hs.set('color', 65280);    // Verde
+                                    hs.set('color', '#00ff00'); // Verde Web
                                     hs.set('alpha', 0.4);
                                 }
-                            } else {
-                                // ¡AQUÍ ESTÁ EL TRUCO! Si no se pintan, la consola nos dirá por qué.
-                                console.warn("Google Sheets tiene el id '" + id + "', pero en 3DVista no existe ningún polígono llamado: " + nombreBuscado);
                             }
                         }
                     }
@@ -75,7 +71,7 @@ setTimeout(function() {
         }
     };
     xhr.send();
-}, 4000); // Subimos a 4 segundos por seguridad para asegurar la carga completa de Velasur
+}, 4000);
 </script>
 </body>
 </html>
