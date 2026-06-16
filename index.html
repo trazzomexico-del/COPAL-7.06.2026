@@ -6,18 +6,18 @@
     <meta name="viewport" id="metaViewport" content="user-scalable=no, initial-scale=1, width=device-width, viewport-fit=cover" data-tdv-general-scale="0.5"/>
     <meta name="apple-mobile-web-app-capable" content="yes"/>
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
-    <script src="lib/tdvplayer.js?v=1781059789861"></script>
-    <link rel="preload" href="locale/es.txt?v=1781059789861" as="fetch" crossorigin="anonymous"/>
-	<link rel="preload" href="script.js?v=1781059789861" as="script"/>
-	<link rel="preload" href="media/panorama_0D987A72_1EB1_E27A_41A0_3EE885BF6467_0/r/3/0_0.webp?v=1781059789861" as="image"/>
-	<link rel="preload" href="media/panorama_0D987A72_1EB1_E27A_41A0_3EE885BF6467_0/l/3/0_0.webp?v=1781059789861" as="image"/>
-	<link rel="preload" href="media/panorama_0D987A72_1EB1_E27A_41A0_3EE885BF6467_0/u/3/0_0.webp?v=1781059789861" as="image"/>
-	<link rel="preload" href="media/panorama_0D987A72_1EB1_E27A_41A0_3EE885BF6467_0/d/3/0_0.webp?v=1781059789861" as="image"/>
-	<link rel="preload" href="media/panorama_0D987A72_1EB1_E27A_41A0_3EE885BF6467_0/f/3/0_0.webp?v=1781059789861" as="image"/>
-	<link rel="preload" href="media/panorama_0D987A72_1EB1_E27A_41A0_3EE885BF6467_0/b/3/0_0.webp?v=1781059789861" as="image"/>
+    <script src="lib/tdvplayer.js?v=1781575306303"></script>
+    <link rel="preload" href="locale/es.txt?v=1781575306303" as="fetch" crossorigin="anonymous"/>
+	<link rel="preload" href="script.js?v=1781575306303" as="script"/>
+	<link rel="preload" href="media/panorama_0D987A72_1EB1_E27A_41A0_3EE885BF6467_0/r/3/0_0.webp?v=1781575306303" as="image"/>
+	<link rel="preload" href="media/panorama_0D987A72_1EB1_E27A_41A0_3EE885BF6467_0/l/3/0_0.webp?v=1781575306303" as="image"/>
+	<link rel="preload" href="media/panorama_0D987A72_1EB1_E27A_41A0_3EE885BF6467_0/u/3/0_0.webp?v=1781575306303" as="image"/>
+	<link rel="preload" href="media/panorama_0D987A72_1EB1_E27A_41A0_3EE885BF6467_0/d/3/0_0.webp?v=1781575306303" as="image"/>
+	<link rel="preload" href="media/panorama_0D987A72_1EB1_E27A_41A0_3EE885BF6467_0/f/3/0_0.webp?v=1781575306303" as="image"/>
+	<link rel="preload" href="media/panorama_0D987A72_1EB1_E27A_41A0_3EE885BF6467_0/b/3/0_0.webp?v=1781575306303" as="image"/>
 	<meta name="description" content="Virtual Tour"/>
 	<meta name="theme-color" content="#FFFFFF"/>
-    <script src="script.js?v=1781059789861"></script>
+    <script src="script.js?v=1781575306303"></script>
     <style type="text/css">
         html, body { height:100%; width:100%; height:100vh; width:100vw; margin:0; padding:0; overflow:hidden; }
         .fill-viewport { position:fixed; top:0; left:0; right:0; bottom:0; padding:0; margin:0; overflow: hidden; }
@@ -26,90 +26,10 @@
         #viewer { z-index:1; }
         #preloadContainer { z-index:2; opacity:0; background-color:rgba(255,255,255,1); transition: opacity 0.5s; -webkit-transition: opacity 0.5s; -moz-transition: opacity 0.5s; -o-transition: opacity 0.5s;}
     </style>
-    <link rel="stylesheet" href="fonts.css?v=1781059789861">
+    <link rel="stylesheet" href="fonts.css?v=1781575306303">
 </head>
 <body>
     <div id="preloadContainer" class="fill-viewport"><div style="z-index: 4; position: absolute; overflow: hidden; left: 0%; top: 50%; width: 100.00%; height: 10.00%" ><div style="text-align:left; color:#000; "><DIV STYLE="text-align:center;font-size:1.6666666666666663vmin;"><SPAN STYLE="display:inline-block; letter-spacing:0vmin; white-space:pre-wrap;color:#777777;font-size:1.67vmin;font-family:Arial, Helvetica, sans-serif;">Cargando Tour. Por favor espera un momento</SPAN></DIV></div></div></div>
     <div id="viewer" class="fill-viewport"></div>
-<script>
-// --- CONFIGURACIÓN DE CREDENCIALES ---
-const AIRTABLE_BASE_ID = 'pat0s6qOv6jzw2Tsg'; 
-const AIRTABLE_API_TOKEN = 'pat0s6qOv6jzw2Tsg.478eb4b67b0c016fb049064eda844089bb7d6d9b020b119e0de181eafa63b1f0'; 
-const AIRTABLE_TABLE_NAME = 'Propiedades';
-
-const configuracionEstatus = {
-    "Disponible": { color: "#2ecc71", opacidad: 0.4 }, // Verde
-    "Apartado":   { color: "#f1c40f", opacidad: 0.5 }, // Amarillo
-    "Vendido":    { color: "#e74c3c", opacidad: 0.6 }  // Rojo
-};
-
-async function consultarAirtableYActualizar() {
-    // 1. Buscamos el reproductor en todas las variables posibles que usa 3DVista
-    let player = null;
-    
-    if (typeof window.vtour !== 'undefined') {
-        player = window.vtour;
-    } else if (typeof window.tdvplayer !== 'undefined' && typeof window.tdvplayer.getPlayer === 'function') {
-        player = window.tdvplayer.getPlayer();
-    } else if (window.panoramas && window.panoramas.getPlayer) {
-        player = window.panoramas.getPlayer();
-    }
-
-    // Si aún no encontramos la función para pintar los hotspots, seguimos esperando
-    if (!player || (typeof player.setHotspotColor !== 'function' && typeof player.setProp !== 'function')) {
-        console.log("Buscando el motor de 3DVista en el mapa...");
-        return; 
-    }
-
-    // Si llegamos aquí, ¡ya encontramos el reproductor! Frenamos el bucle de espera
-    clearInterval(revisorCargaTour);
-    console.log("¡Conexión establecida con 3DVista! Conectando a Airtable...");
-
-    const urlOficial = `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${AIRTABLE_TABLE_NAME}`;
-
-    try {
-        const respuesta = await fetch(urlOficial, {
-            headers: { 'Authorization': `Bearer ${AIRTABLE_API_TOKEN}` }
-        });
-        
-        if (!respuesta.ok) throw new Error("Error en la respuesta de Airtable. Verifica el nombre de la tabla.");
-        
-        const datos = await respuesta.json();
-        console.log("Datos exitosos de Airtable:", datos.records);
-        
-        datos.records.forEach(registro => {
-            const campos = registro.fields;
-            const idHotspot = campos.ID_Hotspot; 
-            const estatusPropiedad = campos.Estatus; 
-            
-            if (idHotspot && estatusPropiedad && configuracionEstatus[estatusPropiedad]) {
-                const infoVisual = configuracionEstatus[estatusPropiedad];
-                
-                // Intentar pintar usando los dos métodos estándar de la API de 3DVista
-                try {
-                    if (typeof player.setHotspotColor === 'function') {
-                        player.setHotspotColor(idHotspot, infoVisual.color, infoVisual.opacidad);
-                        player.setHotspotBorderColor(idHotspot, infoVisual.color, 0.8);
-                    } else if (typeof player.setProp === 'function') {
-                        // Alternativa nativa para ciertos tipos de skins/hotspots
-                        player.setProp(idHotspot, "backgroundColor", infoVisual.color);
-                        player.setProp(idHotspot, "backgroundAlpha", infoVisual.opacidad);
-                    }
-                } catch (errHotspot) {
-                    console.log(`No se pudo pintar el hotspot: ${idHotspot}. Revisa que el nombre coincida.`);
-                }
-            }
-        });
-
-        console.log("¡Sincronización completa!");
-
-    } catch (error) {
-        console.error("Error al mapear Airtable:", error);
-    }
-}
-
-// Revisar cada 1.5 segundos hasta romper el ciclo al conectar
-const revisorCargaTour = setInterval(consultarAirtableYActualizar, 1500);
-</script>
 </body>
 </html>
